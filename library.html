@@ -1,0 +1,103 @@
+<html>
+
+<head>
+</head>
+
+<style>
+  body {
+    margin: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-gap: 2rem;
+    background: rgb(161, 161, 161);
+  }
+
+  img {
+    max-width: 100%;
+    /* box-shadow: 0 0 5px #050505; */
+  }
+
+  article {
+    background: #ECEFF1;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 5px;
+    font: 12px/1.1 system-ui, sans-serif;
+    box-shadow: 5px 5px #444343;
+  }
+
+  article a {
+    text-decoration: none;
+    color: #455A64;
+  }
+
+  article a:hover,
+  article:focus {
+    color: #2196F3;
+  }
+
+  article h3 {
+    padding: 1rem 1rem;
+    margin: 0;
+  }
+  article h5 {
+    padding: 1rem 1rem;
+    margin: 0;
+  }
+  article p {
+    padding: 1rem 1rem;
+    margin: 0;
+  }
+</style>
+
+<body>
+  <h1>Future Events</h1>
+  <script>
+    const RSS_URL = `https://sandiego.librarymarket.com/events/feed/rss?start=now&end=+2day`;
+
+    fetch(RSS_URL)
+      .then(response => response.text())
+      .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
+      .then(data => {
+        console.log(data);
+        const items = data.querySelectorAll("item");
+        let html = ``;
+        items.forEach(el => {
+          description = el.querySelector("description").innerHTML;
+          description = description.split('&lt;').join('<').split('&gt;').join('>');
+          console.log('DESC :' + description);
+          eventtitle = el.querySelector("title").innerHTML;
+          eventimage = '<img src="https://www.sandiego.gov/sites/default/files/default_images/logo-mark_0.png" />';
+          if (description.split('<![CDATA[').length > 1) {
+            eventimage = description.split('<![CDATA[')[1].split(']]>')[0];
+            eventinfo = description.split(']]>')[1].split('<p>')[0];
+            eventhtml = description.split('<p>')[1].split('</p>')[0];
+          }
+          else {
+            eventinfo = description.split('<p>')[0];
+            eventhtml = description.split('<p>')[1].split('</p>')[0];
+          }
+          console.log('IMAGE :' + eventimage);
+          console.log('INFO : ' + eventinfo);
+          console.log('HTML :' + eventhtml);
+          html += `
+        <article>
+          ${eventimage}
+          <h3>
+            <a href="${el.querySelector("link").innerHTML}" target="_blank" rel="noopener">
+              ${eventtitle}
+            </a>
+          </h3>
+          <h5>
+            ${eventinfo}
+          </h5>
+          <p>${eventhtml}</p>
+        </article>
+      `;
+        });
+        document.body.insertAdjacentHTML("beforeend", html);
+      });
+  </script>
+</body>
+
+</html>
